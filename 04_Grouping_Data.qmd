@@ -113,7 +113,8 @@ So let's do that simply by using the `=` (single this time, note) to assign a na
 
 srqflights %>% 
   group_by(carrier, flight, origin) %>% 
-  summarise(count = n())
+  summarise(count = n()) %>% 
+  arrange(desc(count))
 
 ```
 
@@ -130,13 +131,13 @@ srqflights %>%
 
 ```
 
-We can see there four distinct flights flying to Sarasota in January, and while most have daily departures, though one JetBlue flight does not.
+We can see there are four distinct flights flying to Sarasota in January, and while most have daily departures, though one JetBlue flight does not.
 
 Can we do something other than just counting them? Yes, indeed.
 
 Let's ask a question: of our four options here, which one on average has the best on-time departure in January.
 
-We can answer that by instead of counting, using another function withing `summarise`, which is asking for the `mean`. To do that, we tell R the name of the column we want to calculate the average on, in this case `dep_delay`.
+We can answer that by instead of counting, using another function within `summarise`, which is asking for the `mean`. To do that, we tell R the name of the column we want to calculate the average on, in this case `dep_delay`.
 
 ```{r}
 
@@ -180,8 +181,10 @@ Let's say for example, ok, we now know the best on-time flight in January. What 
 ```{r}
 
 srqflights %>% 
-  group_by(carrier, flight, origin) %>% 
-  summarise(avg_delay = mean(dep_delay, na.rm = TRUE))
+  group_by(month, carrier, flight, origin) %>% 
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE),
+            median_delay = median(dep_delay, na.rm = TRUE),
+            flight_count = n())
 
 ```
 
@@ -214,37 +217,97 @@ We now have a lot more information at our fingertips than we did a few minutes a
 
 ```{r}
 
-
-
-```
-
-
-```{r}
-
-
+flights <- nycflights13::flights
 
 ```
 
 
 ```{r}
 
+test <- flights %>% 
+  filter(carrier == "DL") %>% 
+  group_by(month) %>% 
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE),
+            flight_count = n())
+  
 
+```
+```{r}
+ggplot(test, aes(x = reorder(month, avg_delay), y = avg_delay)) +
+  geom_col(color = "#9ebcda", fill = "#9ebcda") +
+  coord_flip() +
+  scale_y_continuous(name = "Average Delay", labels = scales::comma) +
+  scale_x_discrete(name = "Month") +
+  labs(title = "Delta Delays", 
+       subtitle = "By Month",
+       caption = "Source: Flight Data") +
+  theme_fivethirtyeight()
+  
+```
+```{r}
+
+#Load libraries
+library(tidyverse) 
+library(janitor) 
+library(readxl) 
+library(scales)
+library(lubridate)
+library(ggthemes)
+library(esquisse)
+
+#import data
+county_pop <-  read_xlsx('data/county_pop.xlsx') %>% 
+  clean_names()
+
+
+#make a smaller table to work with
+metro_pop <- county_pop %>% 
+  filter(geography %in% c("HENNEPIN", 
+                          "RAMSEY", 
+                          "SCOTT", 
+                          "WASHINGTON", 
+                          "DAKOTA", 
+                          "ANOKA", 
+                          "CARVER")) %>% 
+  arrange(desc(pop_estimate2016))
+
+
+```
+```
+
+
+```{r}
+
+flights %>% 
+  filter(carrier == "DL", dest == "DCA") %>% 
+  group_by(month = 8) %>% 
+   summarise(avg_delay = mean(dep_delay, na.rm = TRUE),
+            flight_count = n())
+  
 
 ```
 
 
 ```{r}
 
-
+flights %>% 
+  filter(dep_delay > 0)
 
 ```
 
 
 ```{r}
 
-
+srqflights <- srqflights %>% 
+  mutate(is_delay = if_else(dep_delay > 0, "YES", "NO"))
 
 ```
 
 
+```{r}
+srqflights %>% 
+  group_by(is_delay) %>% 
+  summarise(flight_count = n()) %>% 
+  mutate(pct = flight_count / sum(flight_count) * 100)
+```
 

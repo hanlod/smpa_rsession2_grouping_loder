@@ -20,7 +20,7 @@ library(ggthemes)
 library(esquisse)
 
 #import data
-county_pop <-  read_xlsx('county_pop.xlsx') %>% 
+county_pop <-  read_xlsx('data/county_pop.xlsx') %>% 
   clean_names()
 
 
@@ -80,7 +80,7 @@ Use colorbrewer2.org to get better colors
 ```{r}
 
 ggplot(metro_pop, aes(x = reorder(geography, pop_estimate2016), y = pop_estimate2016)) + 
-  geom_col(color = "#9ebcda", fill = "#9ebcda")+
+  geom_col(color = "#e7e1ef", fill = "#dd1c77")+
   coord_flip()
 
 ```
